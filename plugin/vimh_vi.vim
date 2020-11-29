@@ -51,8 +51,12 @@ function! s:Update_Log(action)
 	let temp_path_currentfile = expand('%:p')
 	if (temp_path_currentfile != s:path_currentfile) || (temp_currentopenfile_name != s:currentopenfile_name)
 		"let s:qvar_currentfile = g:QReader_CurrentFile_Var()
-		let s:currentopenfile_name = temp_currentopenfile_name
-		let s:path_currentfile = temp_path_currentfile
+		let s:currentopenfile_name = substitute(temp_currentopenfile_name, "[[:cntrl:]]", "", "g")
+		let s:path_currentfile = substitute(temp_path_currentfile, "[[:cntrl:]]", "", "g")
+
+		if (s:path_currentfile != temp_path_currentfile)
+			echoerr printf("vimh_vi, file path=(%s), contains control characters '[[:cntrl:]]', removed before logging", temp_path_currentfile)
+		endif
 	endif
 
 	if (s:path_currentfile == s:path_vimh_log)
