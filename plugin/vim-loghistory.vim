@@ -1,12 +1,16 @@
-"	VIM SETTINGS: {{{3
-"	VIM: let g:mldvp_filecmd_open_tagbar=0 g:mldvp_filecmd_NavHeadings="" g:mldvp_filecmd_NavSubHeadings="" g:mldvp_filecmd_NavDTS=0 g:mldvp_filecmd_vimgpgSave_gotoRecent=0
-"	vim: set tabstop=4 modeline modelines=10 foldmethod=marker:
-"	vim: set foldlevel=2 foldcolumn=3: 
-"	}}}1
-let s:self_name = "mld_vim_vimh_vi"
-let s:self_printdebug=0
+"	vim: set tabstop=4 modeline modelines=10:
+"	vim: set foldlevel=2 foldcolumn=3 foldmethod=marker: 
+"	{{{2
+let g:vimh_version = "0.1"
+
+"	TODO: 2022-06-05T19:57:19AEST vim-loghistory, get realpath (readlink -f) of file name/path (and use that)
+
+let s:flag_printdebug=0
+
+let s:self_name = "vim-loghistory"
 let s:path_log_stderr = printf("/tmp/.stderr.%s.log", s:self_name)
 let g:vimh_loaded = 1
+
 "	Ongoing: 2020-10-21T18:50:52AEDT Support for windows paths?
 let s:home_dir = substitute(shellescape(fnamemodify('~', ':p')), "'", "", "g") 
 
@@ -19,6 +23,7 @@ let s:vimh_delim = "\t"
 let s:vimh_format_iso_datetime = "%Y-%m-%dT%H:%M:%S%Z"
 let s:vimh_hostname = system("echo -n $HOST")
 
+"	Ongoing: 2022-06-08T03:44:58AEST added 'realpath' as 6th column
 "	vimh_vi log columns: 
 "		Delimitor = \t
 "		column 1:	isodatetime, nearest second
@@ -26,14 +31,14 @@ let s:vimh_hostname = system("echo -n $HOST")
 "		column 3: 	host
 "		column 4:	action
 "		column 5: 	filepath
-
-"	{{{2
+"		column 6:	realpath
 
 let s:currentopenfile_name = ""
 let s:path_currentfile = ""
+let s:realpath_currentfile = ""
 
 if (expand('%:t') == "vimh.vi.txt")
-	if (s:self_printdebug == 1)
+	if (s:flag_printdebug == 1)
 		echo printf("%s, Read logfile, set nowrap", s:self_name)
 	endif
 	exe "set nowrap"
@@ -42,25 +47,37 @@ endif
 "	Labeled: 2020-10-22T16:23:34AEDT 
 function! s:Update_Log(action)
 "	{{{
-	if (s:self_printdebug == 1)
+	if (s:flag_printdebug == 1)
 		echo printf("Update Log Begin")
 	endif
 
 	let path_curfile = ""
+
 	let temp_currentopenfile_name = expand('%:t')
 	let temp_path_currentfile = expand('%:p')
+
 	if (temp_path_currentfile != s:path_currentfile) || (temp_currentopenfile_name != s:currentopenfile_name)
 		"let s:qvar_currentfile = g:QReader_CurrentFile_Var()
 		let s:currentopenfile_name = substitute(temp_currentopenfile_name, "[[:cntrl:]]", "", "g")
 		let s:path_currentfile = substitute(temp_path_currentfile, "[[:cntrl:]]", "", "g")
-
 		if (s:path_currentfile != temp_path_currentfile)
-			echoerr printf("vimh_vi, file path=(%s), contains control characters '[[:cntrl:]]', removed before logging", temp_path_currentfile)
+			echoerr printf("%s, file path=(%s), contains control characters '[[:cntrl:]]', removed before logging", s:self_name, temp_path_currentfile)
 		endif
 	endif
 
+
+	let s:realpath_currentfile = ""
+	if (len(temp_path_currentfile) > 0)
+		let cmd_str = "readlink -f " . temp_path_currentfile
+		let s:realpath_currentfile = system(cmd_str)
+	endif
+	if (s:flag_printdebug)
+		echo "s:realpath_currentfile=(" . s:realpath_currentfile . ")"
+	endif
+
+
 	if (s:path_currentfile == s:path_vimh_log)
-		if (s:self_printdebug)
+		if (s:flag_printdebug)
 			echo printf("skip, s:path_currentfile == s:path_vimh_log")
 		endif
 		return
@@ -72,7 +89,7 @@ function! s:Update_Log(action)
 	endif
 
 	if (len(s:currentopenfile_name) == 0)
-		if (s:self_printdebug == 1)
+		if (s:flag_printdebug == 1)
 			echo printf("skip, currentopenfile_name=(%s)", s:currentopenfile_name)
 		endif
 		return 0
@@ -83,9 +100,10 @@ function! s:Update_Log(action)
 	let current_datetime_str = ""
 	let current_datetime_str = strftime(s:vimh_format_iso_datetime)
 	
-	let log_output_str = current_datetime_str . delim . s:currentopenfile_name . delim . s:vimh_hostname . delim . current_action_str . delim . s:path_currentfile
+	"let log_output_str = current_datetime_str . delim . s:currentopenfile_name . delim . s:vimh_hostname . delim . current_action_str . delim . s:path_currentfile
+	let log_output_str = current_datetime_str . delim . s:currentopenfile_name . delim . s:vimh_hostname . delim . current_action_str . delim . s:path_currentfile . delim . s:realpath_currentfile
 
-	if (s:self_printdebug)
+	if (s:flag_printdebug)
 		echo printf("log_output_str=(%s)", log_output_str)
 	endif
 
@@ -104,5 +122,4 @@ autocmd! BufReadPre * VimhLogRead
 autocmd! VimLeave * VimhLogQuit
 autocmd! VimEnter * VimhLogEnter
 
-"	}}}1
 
