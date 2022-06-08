@@ -55,22 +55,26 @@ function! s:Update_Log(action)
 
 	let temp_currentopenfile_name = expand('%:t')
 	let temp_path_currentfile = expand('%:p')
+	let s:currentopenfile_name = substitute(temp_currentopenfile_name, "[[:cntrl:]]", "", "g")
+	let s:path_currentfile = substitute(temp_path_currentfile, "[[:cntrl:]]", "", "g")
 
-	if (temp_path_currentfile != s:path_currentfile) || (temp_currentopenfile_name != s:currentopenfile_name)
+	"if (temp_path_currentfile != s:path_currentfile) || (temp_currentopenfile_name != s:currentopenfile_name)
 		"let s:qvar_currentfile = g:QReader_CurrentFile_Var()
-		let s:currentopenfile_name = substitute(temp_currentopenfile_name, "[[:cntrl:]]", "", "g")
-		let s:path_currentfile = substitute(temp_path_currentfile, "[[:cntrl:]]", "", "g")
-		if (s:path_currentfile != temp_path_currentfile)
-			echoerr printf("%s, file path=(%s), contains control characters '[[:cntrl:]]', removed before logging", s:self_name, temp_path_currentfile)
-		endif
-	endif
+		"let s:currentopenfile_name = substitute(temp_currentopenfile_name, "[[:cntrl:]]", "", "g")
+		"let s:path_currentfile = substitute(temp_path_currentfile, "[[:cntrl:]]", "", "g")
+		"if (s:path_currentfile != temp_path_currentfile)
+		"	echoerr printf("%s, file path=(%s), contains control characters '[[:cntrl:]]', removed before logging", s:self_name, temp_path_currentfile)
+		"endif
+	"endif
 
 
-	let s:realpath_currentfile = ""
+	let temp_realpath_currentfile = ""
 	if (len(temp_path_currentfile) > 0)
 		let cmd_str = "readlink -f " . temp_path_currentfile
-		let s:realpath_currentfile = system(cmd_str)
+		let temp_realpath_currentfile = system(cmd_str)
 	endif
+	let s:realpath_currentfile = substitute(temp_realpath_currentfile, "[[:cntrl:]]", "", "g")
+
 	if (s:flag_printdebug)
 		echo "s:realpath_currentfile=(" . s:realpath_currentfile . ")"
 	endif
