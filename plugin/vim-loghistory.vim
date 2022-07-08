@@ -1,11 +1,11 @@
 "	vim: set tabstop=4 modeline modelines=10:
-"	vim: set foldlevel=2 foldcolumn=3 foldmethod=marker: 
+"	vim: set foldlevel=2 foldcolumn=2 foldmethod=marker: 
 "	{{{2
 let g:vimh_version = "0.1"
 
 "	TODO: 2022-06-05T19:57:19AEST vim-loghistory, get realpath (readlink -f) of file name/path (and use that)
 
-let s:flag_printdebug=0
+let s:flag_printdebug = 0
 
 let s:self_name = "vim-loghistory"
 let s:path_log_stderr = printf("/tmp/.stderr.%s.log", s:self_name)
@@ -70,9 +70,24 @@ function! s:Update_Log(action)
 
 	let temp_realpath_currentfile = ""
 	if (len(temp_path_currentfile) > 0)
-		let cmd_str = "readlink -f " . temp_path_currentfile
+		let cmd_str = "readlink -f '" . temp_path_currentfile . "'"
+
+		if (s:flag_printdebug)
+			echo "cmd_str=(" . cmd_str . ")"
+		endif
+
 		let temp_realpath_currentfile = system(cmd_str)
+
+		if (s:flag_printdebug)
+			echo "temp_realpath_currentfile=(" . temp_realpath_currentfile . ")"
+		endif
+
 	endif
+
+	if (s:flag_printdebug) 
+		echo "s:realpath_currentfile=(" . s:realpath_currentfile . ")"
+	endif
+
 	let s:realpath_currentfile = substitute(temp_realpath_currentfile, "[[:cntrl:]]", "", "g")
 
 	if (s:flag_printdebug)
