@@ -20,7 +20,7 @@ let s:path_vimh_log = s:home_dir . ".vimh"
 "	Delimitor of log columns
 let s:vimh_delim = "\t"
 
-let s:vimh_format_iso_datetime = "%Y-%m-%dT%H:%M:%S%Z"
+let s:vimh_format_iso_datetime = "%Y-%m-%dT%H:%M:%S%z"
 let s:vimh_hostname = system("echo -n $HOST")
 
 "	Ongoing: 2022-06-08T03:44:58AEST added 'realpath' as 6th column
